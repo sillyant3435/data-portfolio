@@ -1,0 +1,61 @@
+@import "tailwindcss";
+
+@theme inline {
+  --color-charcoal: #0B0B0B;
+  --color-graphite: #8E9099;
+  --color-datacyan: #00F5FF;
+  --color-surface: #141414;
+
+  --color-background-primary: var(--color-charcoal);
+  --color-text-primary: #FFFFFF;
+
+  --font-display: var(--font-outfit), sans-serif;
+  --font-mono: var(--font-jetbrains), monospace;
+  --font-sans: var(--font-inter), sans-serif;
+}
+
+:root {
+  --bg-color: #0B0B0B;
+  --grid-color: rgba(0, 245, 255, 0.07);
+}
+
+body {
+  background-color: var(--bg-color);
+  color: var(--color-text-primary);
+  margin: 0;
+  overflow-x: hidden;
+  font-family: var(--font-sans);
+}
+
+.mathematical-grid {
+  position: fixed;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  z-index: -10;
+  pointer-events: none;
+  background-size: 40px 40px;
+  background-image: 
+    linear-gradient(to right, var(--grid-color) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--grid-color) 1px, transparent 1px);
+  mask-image: radial-gradient(ellipse at center, rgba(0,0,0,1) 30%, rgba(0,0,0,0) 70%);
+  -webkit-mask-image: radial-gradient(ellipse at center, rgba(0,0,0,1) 30%, rgba(0,0,0,0) 70%);
+  animation: gridFlow 25s linear infinite;
+}
+
+@keyframes gridFlow {
+  0% { transform: translateY(0); }
+  100% { transform: translateY(40px); }
+}
+
+.text-display {
+  font-family: var(--font-display);
+  letter-spacing: -0.02em;
+  text-transform: uppercase;
+}
+
+.text-data {
+  font-family: var(--font-mono);
+  color: var(--color-datacyan);
+}
