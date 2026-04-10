@@ -27,6 +27,36 @@ body {
   font-family: var(--font-sans);
 }
 
+/* ─── Fix 1: Safe viewport height utility ─── */
+/* Uses Dynamic Viewport Height (dvh) which accounts for mobile browser
+   toolbars that slide in/out. Falls back to vh for older browsers. */
+.h-screen-safe {
+  min-height: 100vh;
+  min-height: 100dvh;
+}
+
+/* ─── Fix 2: Mobile native horizontal scroll for gallery ─── */
+@media (max-width: 767px) {
+  .mobile-scroll-track {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none; /* Firefox */
+  }
+  .mobile-scroll-track::-webkit-scrollbar {
+    display: none; /* Chrome/Safari */
+  }
+  .mobile-scroll-card {
+    scroll-snap-align: center;
+  }
+}
+
+/* ─── Fix 3: Keyboard safe-area padding ─── */
+.keyboard-safe {
+  padding-bottom: env(safe-area-inset-bottom, 1rem);
+}
+
+/* ─── Mathematical Grid Background ─── */
 .mathematical-grid {
   position: fixed;
   top: -50%;
@@ -42,6 +72,16 @@ body {
   mask-image: radial-gradient(ellipse at center, rgba(0,0,0,1) 30%, rgba(0,0,0,0) 70%);
   -webkit-mask-image: radial-gradient(ellipse at center, rgba(0,0,0,1) 30%, rgba(0,0,0,0) 70%);
   animation: gridFlow 25s linear infinite;
+  will-change: transform;
+}
+
+/* Fix 4: Reduce grid density on mobile for GPU perf */
+@media (max-width: 767px) {
+  .mathematical-grid {
+    background-size: 60px 60px;
+    mask-image: radial-gradient(ellipse at center, rgba(0,0,0,1) 20%, rgba(0,0,0,0) 60%);
+    -webkit-mask-image: radial-gradient(ellipse at center, rgba(0,0,0,1) 20%, rgba(0,0,0,0) 60%);
+  }
 }
 
 @keyframes gridFlow {

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { motion } from "framer-motion";
 import { SOYAL_DATA } from "@/config/personalConfig";
 import { submitContactForm } from "@/app/actions/contact";
@@ -15,6 +15,7 @@ export default function TerminalContactForm() {
   const [progress, setProgress] = useState(0);
 
   const inputRef = useRef<HTMLInputElement>(null);
+  const formContainerRef = useRef<HTMLDivElement>(null);
 
   const handleTerminalClick = () => {
     if (step !== 'uploading' && step !== 'success') {
@@ -25,6 +26,17 @@ export default function TerminalContactForm() {
   useEffect(() => {
     handleTerminalClick();
   }, [step]);
+
+  // Fix 3: Scroll the form into view when the mobile keyboard opens
+  const handleInputFocus = useCallback(() => {
+    // Small delay lets the keyboard animation start before we scroll
+    setTimeout(() => {
+      formContainerRef.current?.scrollIntoView({
+        behavior: 'smooth',
+        block: 'center',
+      });
+    }, 100);
+  }, []);
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter") {
@@ -74,8 +86,9 @@ export default function TerminalContactForm() {
 
   return (
     <div 
+      ref={formContainerRef}
       onClick={handleTerminalClick}
-      className="w-full max-w-3xl bg-[#000000] border border-white/10 rounded-xl p-8 font-mono text-sm md:text-base cursor-text relative overflow-hidden shadow-[0_0_50px_rgba(0,245,255,0.05)] mx-auto text-left"
+      className="w-full max-w-3xl bg-[#000000] border border-white/10 rounded-xl p-8 font-mono text-sm md:text-base cursor-text relative overflow-hidden shadow-[0_0_50px_rgba(0,245,255,0.05)] mx-auto text-left keyboard-safe"
     >
       {/* OS Style Top Bar */}
       <div className="absolute top-0 left-0 w-full h-8 bg-white/5 border-b border-white/10 flex items-center px-4 gap-2">
@@ -164,16 +177,19 @@ export default function TerminalContactForm() {
         )}
       </div>
 
-      {/* Hidden Mobile Native Input */}
+      {/* Hidden Mobile Native Input — positioned in-flow but visually invisible
+          so scrollIntoView works correctly. The opacity-0/h-0 approach keeps it
+          part of the layout flow while remaining invisible. */}
       {(step === 'name' || step === 'email' || step === 'message') && (
         <input 
           ref={inputRef}
           type={step === "email" ? "email" : "text"}
-          className="absolute left-[-9999px] top-[-9999px]"
+          className="opacity-0 h-0 w-full overflow-hidden border-0 p-0 m-0 block"
           autoFocus
           value={currentInput}
           onChange={(e) => setCurrentInput(e.target.value)}
           onKeyDown={handleKeyDown}
+          onFocus={handleInputFocus}
         />
       )}
     </div>

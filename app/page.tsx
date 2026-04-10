@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef } from "react";
+import { useRef, useState, useEffect } from "react";
 import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
@@ -14,6 +14,14 @@ gsap.registerPlugin(ScrollTrigger);
 
 export default function Home() {
   const container = useRef(null);
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 768);
+    check();
+    window.addEventListener('resize', check);
+    return () => window.removeEventListener('resize', check);
+  }, []);
 
   useGSAP(() => {
     // 1. Truck'N Roll 'Poster Effect' Slide Layering
@@ -27,14 +35,15 @@ export default function Home() {
       ScrollTrigger.create({
         trigger: panel,
         start: "top top",
-        end: "bottom top", 
+        // Mobile: extend the end point to give more breathing room before fade
+        end: isMobile ? "bottom bottom" : "bottom top", 
         pin: true,
         pinSpacing: false, // Prevents creating white space, allowing next section to overlay
         animation: gsap.to(panel, {
-          scale: 0.93,
+          scale: isMobile ? 0.96 : 0.93,
           opacity: 0.1,
           borderRadius: "3rem",
-          filter: "blur(6px)",
+          filter: isMobile ? "blur(3px)" : "blur(6px)",
           ease: "none"
         }),
         scrub: 1, // Add slight dampen to scrub for smoothness
@@ -66,13 +75,13 @@ export default function Home() {
         }
       );
     });
-  }, { scope: container });
+  }, { scope: container, dependencies: [isMobile] });
 
   return (
     <div ref={container} className="relative w-full text-white bg-charcoal overflow-hidden">
       
       {/* PANEL 1: The Hero */}
-      <section className="panel w-full h-screen relative flex items-center justify-center bg-charcoal will-change-transform z-10 origin-top">
+      <section className="panel w-full h-screen-safe relative flex items-center justify-center bg-charcoal will-change-transform z-10 origin-top">
         <div className="absolute inset-0 z-0">
           <DataCore />
         </div>
@@ -89,7 +98,7 @@ export default function Home() {
       </section>
 
       {/* PANEL 2: Skills / Live Data Dashboard */}
-      <section className="panel w-full h-screen relative flex items-center justify-center bg-[#070707] will-change-transform z-20 origin-top border-t border-white/5">
+      <section className="panel w-full h-screen-safe relative flex items-center justify-center bg-[#070707] will-change-transform z-20 origin-top border-t border-white/5">
          <div className="panel-content-wrap w-full max-w-[90rem] px-8 md:px-12 z-10 flex flex-col justify-center">
             <div className="mb-16">
               <h2 className="text-display text-5xl md:text-7xl font-bold tracking-tighter mix-blend-screen">Core <span className="text-datacyan">Engines.</span></h2>

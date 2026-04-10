@@ -1,21 +1,30 @@
 "use client";
 
-import { useMemo, useRef } from "react";
+import { useMemo, useRef, useState, useEffect } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 
-// Optimization: Number of particles set to find the perfect balance between density and performance
-const PARTICLE_COUNT = 6000;
+// Base particle counts — mobile gets 40% reduction for GPU perf
+const PARTICLE_COUNT_DESKTOP = 6000;
+const PARTICLE_COUNT_MOBILE = 3600;
 
-function ParticleSphere() {
+// Sphere radius ranges — mobile gets 40% smaller geometry
+const RADIUS_DESKTOP = { min: 1.5, max: 3.0 };
+const RADIUS_MOBILE = { min: 0.9, max: 1.8 };
+
+function ParticleSphere({ particleCount, radiusRange, pointSize }: {
+  particleCount: number;
+  radiusRange: { min: number; max: number };
+  pointSize: number;
+}) {
   const pointsRef = useRef<THREE.Points>(null);
 
   // Generate initial particle positions forming a "core" sphere
   const [positions, originalPositions] = useMemo(() => {
-    const pos = new Float32Array(PARTICLE_COUNT * 3);
-    for (let i = 0; i < PARTICLE_COUNT; i++) {
+    const pos = new Float32Array(particleCount * 3);
+    for (let i = 0; i < particleCount; i++) {
         // Distribute points spherically
-        const r = 1.5 + Math.random() * 1.5; // Radius from 1.5 to 3.0 creating a dense inner ring and dispersed outer ring
+        const r = radiusRange.min + Math.random() * (radiusRange.max - radiusRange.min);
         const theta = 2 * Math.PI * Math.random();
         const phi = Math.acos(2 * Math.random() - 1);
         
@@ -29,7 +38,7 @@ function ParticleSphere() {
     }
     // Return both the mutable array and a clean copy of the original positions
     return [pos, new Float32Array(pos)];
-  }, []);
+  }, [particleCount, radiusRange.min, radiusRange.max]);
 
   useFrame((state, delta) => {
     if (!pointsRef.current) return;
@@ -53,7 +62,7 @@ function ParticleSphere() {
     const positions = pointsRef.current.geometry.attributes.position.array as Float32Array;
     
     // We run a fast CPU-side physics model to disperse and return particles
-    for (let i = 0; i < PARTICLE_COUNT; i++) {
+    for (let i = 0; i < particleCount; i++) {
         const i3 = i * 3;
         const x = originalPositions[i3];
         const y = originalPositions[i3 + 1];
@@ -102,7 +111,7 @@ function ParticleSphere() {
         />
       </bufferGeometry>
       <pointsMaterial
-        size={0.015} // Tiny points
+        size={pointSize}
         color="#00F5FF" // Data-Cyan
         transparent
         opacity={0.8}
@@ -115,10 +124,28 @@ function ParticleSphere() {
 }
 
 export default function DataCore() {
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 768);
+    check();
+    window.addEventListener('resize', check);
+    return () => window.removeEventListener('resize', check);
+  }, []);
+
+  const particleCount = isMobile ? PARTICLE_COUNT_MOBILE : PARTICLE_COUNT_DESKTOP;
+  const radiusRange = isMobile ? RADIUS_MOBILE : RADIUS_DESKTOP;
+  const pointSize = isMobile ? 0.01 : 0.015;
+  const dpr: [number, number] = isMobile ? [1, 1] : [1, 2];
+
   return (
     <div className="w-full h-full absolute inset-0 mix-blend-screen opacity-90">
-      <Canvas camera={{ position: [0, 0, 7], fov: 60 }} dpr={[1, 2]}> {/* Cap DPR for performance on high-res displays */}
-        <ParticleSphere />
+      <Canvas camera={{ position: [0, 0, 7], fov: 60 }} dpr={dpr}>
+        <ParticleSphere 
+          particleCount={particleCount} 
+          radiusRange={radiusRange} 
+          pointSize={pointSize} 
+        />
       </Canvas>
     </div>
   );
