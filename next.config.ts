@@ -8,19 +8,20 @@ const nextConfig: NextConfig = {
         hostname: "images.unsplash.com",
       },
     ],
-    cacheControl: "public, max-age=31536000, immutable",
+
   },
   compress: true,
   poweredByHeader: false,
   reactStrictMode: true,
-  eslint: {
-    ignoreDuringBuilds: false,
-  },
   headers: async () => {
     return [
       {
         source: "/(.*)",
         headers: [
+          {
+            key: "Cache-Control",
+            value: "public, max-age=31536000, immutable",
+          },
           {
             key: "X-Content-Type-Options",
             value: "nosniff",
