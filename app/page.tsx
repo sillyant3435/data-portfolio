@@ -126,32 +126,3 @@ export default function Home() {
     </div>
   );
 }
-      <section className="panel w-full h-screen-safe relative flex items-center justify-center bg-[#070707] will-change-transform z-20 origin-top border-t border-white/5">
-         <div className="panel-content-wrap w-full max-w-[90rem] px-8 md:px-12 z-10 flex flex-col justify-center">
-            <div className="mb-16">
-              <h2 className="text-display text-5xl md:text-7xl font-bold tracking-tighter mix-blend-screen">Core <span className="text-datacyan">Engines.</span></h2>
-              <p className="text-data text-sm opacity-50 mt-4">{"// LIVE TELEMETRY STREAMS"}</p>
-            </div>
-            <SkillsDashboard />
-         </div>
-      </section>
-
-      {/* PANEL 3: Horizontal Gallery Track */}
-      {/* Has no-global-pin to prevent ScrollTrigger collision between pinning vertical and horizontal concurrently */}
-      <section className="panel no-global-pin w-full relative bg-surface z-30 border-t border-white/5">
-         <div className="panel-content-wrap w-full">
-            <HorizontalGallery />
-         </div>
-      </section>
-
-
-      {/* PANEL 4: Footer */}
-      <section className="panel w-full min-h-screen relative flex flex-col items-center justify-center bg-[#070707] z-40 border-t border-white/5 py-24">
-         <div className="panel-content-wrap text-center flex flex-col items-center w-full px-4">
-            <h2 className="text-display text-4xl md:text-6xl font-bold mb-12 tracking-tighter mix-blend-screen">Initialize <span className="text-datacyan">Connection.</span></h2>
-            <TerminalContactForm />
-         </div>
-      </section>
-    </div>
-  );
-}
