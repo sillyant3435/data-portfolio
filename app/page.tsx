@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState, useEffect } from "react";
+import { useRef } from "react";
 import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
@@ -9,22 +9,22 @@ import SkillsDashboard from "@/components/SkillsDashboard";
 import HorizontalGallery from "@/components/HorizontalGallery";
 import TerminalContactForm from "@/components/TerminalContactForm";
 import { SOYAL_DATA } from "@/config/personalConfig";
+import { useMediaQuery } from "@/lib/hooks/useMediaQuery";
 
 gsap.registerPlugin(ScrollTrigger);
 
 export default function Home() {
   const container = useRef(null);
-  const [isMobile, setIsMobile] = useState(false);
-
-  useEffect(() => {
-    const check = () => setIsMobile(window.innerWidth < 768);
-    check();
-    window.addEventListener('resize', check);
-    return () => window.removeEventListener('resize', check);
-  }, []);
+  const isMobile = useMediaQuery("(max-width: 768px)");
 
   useGSAP(() => {
-    // 1. Truck'N Roll 'Poster Effect' Slide Layering
+    // Skip all animation on mobile for better performance
+    // Mobile animations should be simpler and hardware-accelerated
+    if (isMobile) {
+      return;
+    }
+
+    // 1. Truck'N Roll 'Poster Effect' Slide Layering (Desktop only)
     const sections = gsap.utils.toArray<HTMLElement>('.panel');
     
     sections.forEach((panel, i) => {
@@ -35,25 +35,24 @@ export default function Home() {
       ScrollTrigger.create({
         trigger: panel,
         start: "top top",
-        // Mobile: extend the end point to give more breathing room before fade
-        end: isMobile ? "bottom bottom" : "bottom top", 
+        end: "bottom top", 
         pin: true,
-        pinSpacing: false, // Prevents creating white space, allowing next section to overlay
+        pinSpacing: false,
         animation: gsap.to(panel, {
-          scale: isMobile ? 0.96 : 0.93,
+          scale: 0.93,
           opacity: 0.1,
           borderRadius: "3rem",
-          filter: isMobile ? "blur(3px)" : "blur(6px)",
+          filter: "blur(6px)",
           ease: "none"
         }),
-        scrub: 1, // Add slight dampen to scrub for smoothness
+        scrub: 1,
       });
     });
 
-    // 2. High-speed fluid entrance motion blur
+    // 2. High-speed fluid entrance motion blur (Desktop only)
     sections.forEach((panel, i) => {
-      if (i === 0) return; // Skip Hero since it mounts immediately
-      if (panel.classList.contains('no-global-pin')) return; // Fix: Prevent Y transform on horizontal tracks which breaks fixed position pinning
+      if (i === 0) return;
+      if (panel.classList.contains('no-global-pin')) return;
       
       const content = panel.querySelector('.panel-content-wrap');
       if (!content) return;
@@ -68,7 +67,7 @@ export default function Home() {
           ease: "power2.out",
           scrollTrigger: {
             trigger: panel,
-            start: "top 90%", // Trigger slightly before it comes into view 
+            start: "top 90%",
             end: "top 30%",
             scrub: 1, 
           }
