@@ -220,3 +220,219 @@ textarea:focus {
   background: rgba(0, 245, 255, 0.2);
 }
 
+/* ═══════════════════════════════════════════════════════════════ */
+/* NEW: COMPREHENSIVE MOBILE OPTIMIZATION & ACCESSIBILITY */
+/* ═══════════════════════════════════════════════════════════════ */
+
+/* Smooth Scroll for All Browsers */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Prevent Horizontal Overflow on Mobile */
+body, * {
+  overflow-x: hidden;
+  max-width: 100vw;
+}
+
+/* ─── RESPONSIVE TYPOGRAPHY WITH CLAMP ─── */
+/* All headings scale fluidly between breakpoints */
+.panel h2,
+h2[class*="text-display"] {
+  font-size: clamp(2rem, 5vw, 3.5rem);
+  font-weight: 800;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+}
+
+/* Body text scaling */
+p, .text-data {
+  font-size: clamp(0.875rem, 2vw, 1rem);
+  line-height: 1.65;
+}
+
+/* Card titles */
+.card-title, [class*="text-2xl"] {
+  font-size: clamp(1rem, 2.5vw, 1.25rem);
+  font-weight: 700;
+}
+
+/* ─── MOBILE LAYOUT OPTIMIZATION (< 768px) ─── */
+@media (max-width: 767px) {
+  /* All sections get horizontal padding to prevent edge clipping */
+  section, .panel {
+    padding-left: 1.25rem;
+    padding-right: 1.25rem;
+  }
+
+  /* Hero mobile text scaling */
+  .panel h1 {
+    font-size: clamp(2.5rem, 10vw, 4rem);
+  }
+
+  .panel > div > p {
+    font-size: clamp(0.75rem, 3.5vw, 1rem);
+  }
+
+  /* Skills Dashboard - enforce 1-column on mobile */
+  .grid-cols-1, [class*="grid-cols-3"] {
+    grid-template-columns: 1fr !important;
+    row-gap: 2rem;
+  }
+
+  /* Project cards - Full width, reduced padding */
+  .project-card, [class*="bg-charcoal"] {
+    padding: 1rem;
+    width: 100%;
+  }
+
+  /* Terminal optimization for mobile */
+  .bg-\[\#000000\], [class*="max-w-3xl"] {
+    max-width: min(90vw, 760px) !important;
+    width: 100%;
+    margin: 0 auto;
+  }
+
+  /* Terminal font size for mobile */
+  .font-mono {
+    font-size: clamp(11px, 2.5vw, 14px);
+  }
+
+  /* Input must be 16px to prevent iOS zoom */
+  input, textarea, select {
+    font-size: 16px !important;
+  }
+
+  /* Ensure all interactive element tap targets are 44x44px minimum */
+  button,
+  [role="button"],
+  a[href],
+  input,
+  textarea,
+  select,
+  .project-card,
+  .skill-card {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  /* Reduce gap between sections on mobile */
+  .h-screen-safe {
+    min-height: auto;
+  }
+}
+
+/* ─── TABLET LAYOUT (768px - 1024px) ─── */
+@media (min-width: 768px) and (max-width: 1024px) {
+  /* 2-column grid on tablet */
+  [class*="grid-cols-3"] {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+}
+
+/* ─── ACCESSIBILITY: PREFERS REDUCED MOTION ─── */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ─── MOBILE HOVER → ACTIVE STATES ─── */
+/* On mobile/touch devices, :active replaces :hover for visual feedback */
+@media (hover: none) and (pointer: coarse) {
+  .project-card:active,
+  .skill-card:active,
+  [class*="group"]:active {
+    border-color: rgba(0, 245, 255, 0.5);
+    background-color: rgba(0, 245, 255, 0.05);
+    transform: scale(0.98);
+    transition: all 0.15s ease;
+  }
+
+  button:active,
+  [role="button"]:active {
+    transform: scale(0.95);
+    opacity: 0.8;
+  }
+}
+
+/* ─── CANVAS OPTIMIZATION FOR MOBILE ─── */
+@media (max-width: 767px) {
+  /* Optimize canvas rendering on mobile */
+  canvas {
+    image-rendering: -webkit-optimize-contrast;
+    will-change: auto;
+  }
+}
+
+/* ─── SECTION CONSISTENCY ─── */
+/* All main section headings share the same style */
+.panel h2,
+[class*="Initialize"],
+[class*="Core"] {
+  font-weight: 800;
+  text-transform: uppercase;
+  tracking: -0.01em;
+}
+
+/* ─── RESPONSIVE PROJECT/SKILL CARDS ─── */
+.project-card, .skill-card {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+@media (hover: hover) {
+  .project-card:hover,
+  .skill-card:hover {
+    border-color: rgba(0, 245, 255, 0.3);
+    background-color: rgba(0, 245, 255, 0.02);
+    transform: translateY(-4px);
+    box-shadow: 0 4px 20px rgba(0, 245, 255, 0.1);
+  }
+}
+
+/* ─── NAV/INTERACTIVE ELEMENTS ─── */
+/* Ensure all interactive elements have proper sizing and transition */
+a, button, [role="button"] {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  min-width: 44px;
+  padding: 0.75rem 1.5rem;
+  transition: all 0.2s ease;
+  border-radius: 0.5rem;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+a:focus-visible, button:focus-visible {
+  outline: 2px solid rgba(0, 245, 255, 0.5);
+  outline-offset: 2px;
+}
+
+/* ─── PREVENT LAYOUT SHIFT ─── */
+html {
+  scrollbar-gutter: stable;
+  scroll-padding-top: 2rem;
+}
+
+/* ─── TYPOGRAPHY: IMPROVED READABILITY ─── */
+body {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  line-height: 1.65;
+}
+
+/* Code/Monospace text */
+code, .font-mono {
+  font-variant-numeric: tabular-nums;
+}
+
+

@@ -95,14 +95,18 @@ export default function HorizontalGallery() {
     <div ref={container} className="h-screen w-full overflow-hidden bg-surface flex flex-col justify-center border-y border-white/5 relative">
        {/* Background typography tracking section status */}
       <div className="absolute top-12 left-12 z-20">
-         <h2 className="text-display text-4xl text-white">Project <span className="text-datacyan">Matrix.</span></h2>
+         <h2 className="text-display text-white" style={{
+           fontSize: 'clamp(2rem, 5vw, 3.5rem)',
+           fontWeight: 800,
+           lineHeight: 1.2
+         }}>Project <span className="text-datacyan">Matrix.</span></h2>
          {needsScroll && <p className="text-data text-sm opacity-60 mt-2 tracking-widest">{"// SCROLL TO PAN [X-AXIS]"}</p>}
       </div>
 
       {/* The track containing the posters */}
       <div 
         ref={track} 
-        className={`flex flex-col md:flex-row items-center h-full pt-20 group/track ${needsScroll ? 'w-max px-[20vw] flex-nowrap gap-24' : 'w-full justify-center flex-wrap md:flex-nowrap gap-8 md:gap-16'}`}
+        className={`flex flex-col md:flex-row items-center h-full pt-8 md:pt-12 group/track ${needsScroll ? 'w-max px-[20vw] flex-nowrap gap-24' : 'w-full justify-center flex-wrap md:flex-nowrap gap-8 md:gap-16'}`}
       >
         {SOYAL_DATA.projects.map((proj) => (
           <ProjectCard 

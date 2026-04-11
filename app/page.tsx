@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef } from "react";
+import { useRef, useEffect } from "react";
 import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
@@ -16,6 +16,11 @@ gsap.registerPlugin(ScrollTrigger);
 export default function Home() {
   const container = useRef(null);
   const isMobile = useMediaQuery("(max-width: 768px)");
+
+  // Fix: Prevent auto-scroll to contact section on page load
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
 
   useGSAP(() => {
     // Skip all animation on mobile for better performance
@@ -85,13 +90,18 @@ export default function Home() {
           <DataCore />
         </div>
         <div className="panel-content-wrap z-10 text-center relative pointer-events-none w-full px-4">
-          <h1 className="text-display text-6xl md:text-8xl lg:text-[10rem] font-bold tracking-tighter leading-none mb-6 group cursor-default pointer-events-auto mix-blend-screen drop-shadow-2xl">
+          <h1 className="text-display font-bold leading-none mb-6 group cursor-default pointer-events-auto mix-blend-screen drop-shadow-2xl" style={{
+            fontSize: 'clamp(3.5rem, 8vw, 7rem)',
+            fontWeight: 800,
+            letterSpacing: '-0.02em',
+            lineHeight: 1.1
+          }}>
             <span className="text-white hover:text-datacyan hover:drop-shadow-[0_0_20px_rgba(0,245,255,0.3)] transition-all duration-500">{SOYAL_DATA.name.split(" ")[0]}</span>
             <br />
             <span className="text-graphite hover:text-white transition-colors duration-500">{SOYAL_DATA.name.split(" ")[1]}.</span>
           </h1>
           <p className="text-data mt-8 text-lg md:text-xl tracking-widest uppercase opacity-80 hover:opacity-100 transition-opacity duration-300 pointer-events-auto">
-            {`// ${SOYAL_DATA.role} Portfolio`}
+            // {SOYAL_DATA.role.toUpperCase()}
           </p>
         </div>
       </section>
@@ -100,7 +110,11 @@ export default function Home() {
       <section className="panel w-full h-screen-safe relative flex items-center justify-center bg-[#070707] will-change-transform z-20 origin-top border-t border-white/5">
          <div className="panel-content-wrap w-full max-w-[90rem] px-8 md:px-12 z-10 flex flex-col justify-center">
             <div className="mb-16">
-              <h2 className="text-display text-5xl md:text-7xl font-bold tracking-tighter mix-blend-screen">Core <span className="text-datacyan">Engines.</span></h2>
+              <h2 className="text-display font-bold tracking-tighter mix-blend-screen" style={{
+                fontSize: 'clamp(2rem, 5vw, 3.5rem)',
+                fontWeight: 800,
+                lineHeight: 1.2
+              }}>Core <span className="text-datacyan">Engines.</span></h2>
               <p className="text-data text-sm opacity-50 mt-4">{"// LIVE TELEMETRY STREAMS"}</p>
             </div>
             <SkillsDashboard />
@@ -109,7 +123,7 @@ export default function Home() {
 
       {/* PANEL 3: Horizontal Gallery Track */}
       {/* Has no-global-pin to prevent ScrollTrigger collision between pinning vertical and horizontal concurrently */}
-      <section className="panel no-global-pin w-full relative bg-surface z-30 border-t border-white/5">
+      <section className="panel no-global-pin w-full relative bg-surface z-30 border-t border-white/5 py-8">
          <div className="panel-content-wrap w-full">
             <HorizontalGallery />
          </div>
@@ -119,7 +133,11 @@ export default function Home() {
       {/* PANEL 4: Footer */}
       <section className="panel w-full min-h-screen relative flex flex-col items-center justify-center bg-[#070707] z-40 border-t border-white/5 py-24">
          <div className="panel-content-wrap text-center flex flex-col items-center w-full px-4">
-            <h2 className="text-display text-4xl md:text-6xl font-bold mb-12 tracking-tighter mix-blend-screen">Initialize <span className="text-datacyan">Connection.</span></h2>
+            <h2 className="text-display font-bold mb-12 tracking-tighter mix-blend-screen" style={{
+              fontSize: 'clamp(2rem, 5vw, 3.5rem)',
+              fontWeight: 800,
+              lineHeight: 1.2
+            }}>Initialize <span className="text-datacyan">Connection.</span></h2>
             <TerminalContactForm />
          </div>
       </section>

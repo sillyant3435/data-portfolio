@@ -146,11 +146,11 @@ export default function SkillsDashboard() {
         </div>
       </div>
 
-      {/* Skill 3: Tableau - Mathematical Radar Chart */}
+      {/* Skill 3: Power BI - Interactive Reports */}
       <div className="bg-charcoal border border-white/10 rounded-xl p-8 relative overflow-hidden group">
         <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-datacyan to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-        <h3 className="text-display text-2xl text-white mb-2">Tableau <span className="text-datacyan text-sm ml-2 font-mono">Viz</span></h3>
-        <p className="text-data text-xs mb-6 opacity-70">Interactive Dashboards & Interfaces</p>
+        <h3 className="text-display text-2xl text-white mb-2">Power BI <span className="text-datacyan text-sm ml-2 font-mono">Reports</span></h3>
+        <p className="text-data text-xs mb-6 opacity-70">Interactive Dashboards & Reporting</p>
         
         <div className="h-32 w-full relative flex items-center justify-center">
           <svg viewBox="0 0 100 100" className="w-[80%] h-[100%] overflow-visible">

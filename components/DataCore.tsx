@@ -1,13 +1,13 @@
 "use client";
 
-import { useMemo, useRef } from "react";
+import { useMemo, useRef, useEffect } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { useMediaQuery } from "@/lib/hooks/useMediaQuery";
 
-// Base particle counts — mobile gets 40% reduction for GPU perf
-const PARTICLE_COUNT_DESKTOP = 6000;
-const PARTICLE_COUNT_MOBILE = 3600;
+// Base particle counts — mobile gets 80% reduction for GPU perf
+const PARTICLE_COUNT_DESKTOP = 800;
+const PARTICLE_COUNT_MOBILE = 150;
 
 // Sphere radius ranges — mobile gets 40% smaller geometry
 const RADIUS_DESKTOP = { min: 1.5, max: 3.0 };
@@ -19,6 +19,21 @@ function ParticleSphere({ particleCount, radiusRange, pointSize }: {
   pointSize: number;
 }) {
   const pointsRef = useRef<THREE.Points>(null);
+  const isVisibleRef = useRef(true);
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+
+  // Track visibility using Intersection Observer to pause animation when off-screen
+  useEffect(() => {
+    const canvas = document.querySelector('canvas');
+    if (!canvas) return;
+
+    const observer = new IntersectionObserver(([entry]) => {
+      isVisibleRef.current = entry.isIntersecting;
+    }, { threshold: 0.1 });
+
+    observer.observe(canvas);
+    return () => observer.disconnect();
+  }, []);
 
   // Generate initial particle positions forming a "core" sphere
   const [positions, originalPositions] = useMemo(() => {
@@ -42,7 +57,12 @@ function ParticleSphere({ particleCount, radiusRange, pointSize }: {
   }, [particleCount, radiusRange.min, radiusRange.max]);
 
   useFrame((state, delta) => {
-    if (!pointsRef.current) return;
+    // Check if canvas is visible (for battery/GPU performance)
+    if (!isVisibleRef.current || !pointsRef.current) return;
+
+    // Respect prefers-reduced-motion for accessibility
+    const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (prefersReduced) return;
     
     // 1. Core behavior: Slowly orbit the center
     pointsRef.current.rotation.y += delta * 0.05;

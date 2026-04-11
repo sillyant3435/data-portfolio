@@ -41,7 +41,10 @@ export default function TerminalContactForm() {
   };
 
   useEffect(() => {
-    handleTerminalClick();
+    // Only focus on step changes AFTER initial mount, not on initial 'name' step
+    if (step !== 'name') {
+      handleTerminalClick();
+    }
   }, [step]);
 
   const handleInputFocus = useCallback(() => {
@@ -286,17 +289,14 @@ export default function TerminalContactForm() {
           ref={inputRef}
           type={step === "email" ? "email" : "text"}
           className="opacity-0 h-0 w-full overflow-hidden border-0 p-0 m-0 block absolute"
-          autoFocus
+          autoFocus={false}
           autoComplete={step === "email" ? "email" : step === "name" ? "name" : "off"}
           value={currentInput}
           onChange={(e) => setCurrentInput(e.target.value)}
           onKeyDown={handleKeyDown}
-          onFocus={handleInputFocus}
           style={{
-            // Prevent iOS zoom on input focus by setting font-size >= 16px (this is actually inherited)
-            // Use a more explicit approach
-            fontSize: '16px', // iOS zooms if font-size < 16px
-            left: '-9999px', // Off-screen positioning (better than opacity-0 for mobile UX)
+            fontSize: '16px',
+            left: '-9999px',
           }}
         />
       )}
