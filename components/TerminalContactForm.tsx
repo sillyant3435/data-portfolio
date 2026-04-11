@@ -5,7 +5,15 @@ import { motion } from "framer-motion";
 import { SOYAL_DATA } from "@/config/personalConfig";
 import { submitContactForm } from "@/app/actions/contact";
 
-type Step = 'name' | 'email' | 'message' | 'uploading' | 'success';
+type Step = 'name' | 'email' | 'message' | 'uploading' | 'success' | 'error';
+
+/**
+ * Improved email validation
+ */
+function isValidEmail(email: string): boolean {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return emailRegex.test(email);
+}
 
 export default function TerminalContactForm() {
   const [step, setStep] = useState<Step>('name');
@@ -13,12 +21,21 @@ export default function TerminalContactForm() {
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
   const [progress, setProgress] = useState(0);
+  const [errorMessage, setErrorMessage] = useState("");
+  const [csrfToken, setCSRFToken] = useState("");
 
   const inputRef = useRef<HTMLInputElement>(null);
   const formContainerRef = useRef<HTMLDivElement>(null);
 
+  // Initialize CSRF token on mount
+  useEffect(() => {
+    // In a real app, fetch CSRF token from server
+    // For now, generate a simple one client-side
+    setCSRFToken(Math.random().toString(36).substring(2));
+  }, []);
+
   const handleTerminalClick = () => {
-    if (step !== 'uploading' && step !== 'success') {
+    if (step !== 'uploading' && step !== 'success' && step !== 'error') {
       inputRef.current?.focus();
     }
   };
@@ -27,22 +44,63 @@ export default function TerminalContactForm() {
     handleTerminalClick();
   }, [step]);
 
-  // Fix 3: Scroll the form into view when the mobile keyboard opens
   const handleInputFocus = useCallback(() => {
-    // Small delay lets the keyboard animation start before we scroll
-    setTimeout(() => {
-      formContainerRef.current?.scrollIntoView({
-        behavior: 'smooth',
-        block: 'center',
-      });
-    }, 100);
+    // On mobile, don't scroll immediately - let keyboard animation finish
+    // Use requestAnimationFrame to sync with browser layout
+    if (typeof window === "undefined") return;
+    
+    requestAnimationFrame(() => {
+      const isMobile = window.innerWidth < 768;
+      if (!isMobile) return; // Only scroll on mobile
+      
+      const formElement = formContainerRef.current;
+      if (!formElement) return;
+
+      // Use a small delay for iOS keyboard animation
+      const delay = /iPhone|iPad|iPod/.test(navigator.userAgent) ? 300 : 100;
+      
+      setTimeout(() => {
+        const input = inputRef.current;
+        if (!input) return;
+
+        // Scroll input into view with minimal offset
+        const scrollOptions: ScrollIntoViewOptions = {
+          behavior: 'smooth',
+          block: 'end' as const, // Align to bottom to avoid keyboard covering
+        };
+
+        input.scrollIntoView(scrollOptions);
+      }, delay);
+    });
   }, []);
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter") {
-      if (step === 'name' && name.trim()) setStep('email');
-      else if (step === 'email' && email.includes('@')) setStep('message');
-      else if (step === 'message' && message.trim()) {
+      // Improved validation for each step
+      if (step === 'name') {
+        if (name.trim().length < 2) {
+          setErrorMessage("Name must be at least 2 characters.");
+          return;
+        }
+        setErrorMessage("");
+        setStep('email');
+      } else if (step === 'email') {
+        if (!isValidEmail(email)) {
+          setErrorMessage("Please enter a valid email address.");
+          return;
+        }
+        setErrorMessage("");
+        setStep('message');
+      } else if (step === 'message') {
+        if (message.trim().length < 10) {
+          setErrorMessage("Message must be at least 10 characters.");
+          return;
+        }
+        if (message.length > 2000) {
+          setErrorMessage("Message is too long (max 2000 characters).");
+          return;
+        }
+        setErrorMessage("");
         setStep('uploading');
         simulateUpload();
       }
@@ -51,6 +109,7 @@ export default function TerminalContactForm() {
 
   const currentInput = step === 'name' ? name : step === 'email' ? email : message;
   const setCurrentInput = (val: string) => {
+    setErrorMessage(""); // Clear error when user starts typing
     if (step === 'name') setName(val);
     if (step === 'email') setEmail(val);
     if (step === 'message') setMessage(val);
@@ -59,27 +118,46 @@ export default function TerminalContactForm() {
   const simulateUpload = async () => {
     setProgress(0);
     
-    // Fire the async server action off in the background while the UI loads
-    const actionPromise = submitContactForm(name, email, message);
-    
+    // Start animated progress
     const interval = setInterval(() => {
       setProgress(prev => {
         const jump = Math.floor(Math.random() * 20) + 10;
         if (prev + jump >= 90) {
-          // Pause visual progress at 90% until backend server resolves
-          return 90; 
+          return 90; // Pause at 90% until server responds
         }
         return prev + jump;
       });
     }, 300);
 
-    // Wait absolutely for the network layer
-    await actionPromise;
-    clearInterval(interval);
-    
-    // Fulfill UI requirement upon successful handshake
-    setProgress(100);
-    setTimeout(() => setStep('success'), 600);
+    try {
+      // Call server action with CSRF token
+      const result = await submitContactForm(name, email, message, csrfToken);
+      
+      clearInterval(interval);
+      
+      if (result.success) {
+        setProgress(100);
+        setTimeout(() => setStep('success'), 600);
+      } else {
+        // Server-side validation error
+        setErrorMessage(result.error || "Failed to send message.");
+        clearInterval(interval);
+        setProgress(0);
+        setStep('error');
+      }
+    } catch (error) {
+      clearInterval(interval);
+      setErrorMessage("Network error. Please check your connection and try again.");
+      setProgress(0);
+      setStep('error');
+      console.error("Form submission error:", error);
+    }
+  };
+
+  const handleRetry = () => {
+    setErrorMessage("");
+    setStep('message');
+    setProgress(0);
   };
 
   const Prefix = () => <span className="text-graphite mr-3 inline-block select-none">root@data-core:~#</span>;
@@ -88,7 +166,11 @@ export default function TerminalContactForm() {
     <div 
       ref={formContainerRef}
       onClick={handleTerminalClick}
-      className="w-full max-w-3xl bg-[#000000] border border-white/10 rounded-xl p-8 font-mono text-sm md:text-base cursor-text relative overflow-hidden shadow-[0_0_50px_rgba(0,245,255,0.05)] mx-auto text-left keyboard-safe"
+      className="w-full max-w-3xl bg-[#000000] border border-white/10 rounded-xl p-8 font-mono text-sm md:text-base cursor-text relative overflow-hidden shadow-[0_0_50px_rgba(0,245,255,0.05)] mx-auto text-left"
+      style={{
+        // Prevent iOS from zooming on input focus
+        paddingBottom: 'max(2rem, env(safe-area-inset-bottom))'
+      }}
     >
       {/* OS Style Top Bar */}
       <div className="absolute top-0 left-0 w-full h-8 bg-white/5 border-b border-white/10 flex items-center px-4 gap-2">
@@ -115,16 +197,23 @@ export default function TerminalContactForm() {
             <br/><span className="text-graphite text-xs ml-[140px]">Query OK, 1 row affected.</span>
           </div>
         )}
-        {(step === 'message' || step === 'uploading' || step === 'success') && (
+        {(step === 'message' || step === 'uploading' || step === 'success' || step === 'error') && (
           <div className="text-white">
             <Prefix /> <span className="text-datacyan">UPDATE</span> contacts <span className="text-datacyan">SET</span> email='{email}';
             <br/><span className="text-graphite text-xs ml-[140px]">Query OK, 1 row affected.</span>
           </div>
         )}
-        {(step === 'uploading' || step === 'success') && (
+        {(step === 'uploading' || step === 'success' || step === 'error') && (
           <div className="text-white">
             <Prefix /> <span className="text-datacyan">UPDATE</span> contacts <span className="text-datacyan">SET</span> message='{message}';
             <br/><span className="text-graphite text-xs ml-[140px]">Query OK, 1 row affected.</span>
+          </div>
+        )}
+
+        {/* Error Message Display */}
+        {errorMessage && (
+          <div className="mt-4 p-3 bg-red-500/10 border border-red-500/30 rounded text-red-400 text-xs">
+            <span className="text-datacyan">ERROR:</span> {errorMessage}
           </div>
         )}
 
@@ -168,6 +257,20 @@ export default function TerminalContactForm() {
           </div>
         )}
 
+        {/* Error State with Retry */}
+        {step === 'error' && (
+          <div className="mt-8 text-white text-center border border-red-500/30 p-4 bg-red-500/5">
+            <span className="text-red-400 font-bold tracking-widest text-lg block mb-2">TRANSACTION FAILED.</span>
+            <span className="text-graphite text-xs block mb-4">{errorMessage}</span>
+            <button
+              onClick={handleRetry}
+              className="px-4 py-2 bg-datacyan/20 border border-datacyan text-datacyan text-xs rounded hover:bg-datacyan/30 transition-colors"
+            >
+              [RETRY]
+            </button>
+          </div>
+        )}
+
         {/* Final Output */}
         {step === 'success' && (
           <div className="mt-8 text-white text-center border border-datacyan/30 p-4 bg-datacyan/5">
@@ -177,19 +280,24 @@ export default function TerminalContactForm() {
         )}
       </div>
 
-      {/* Hidden Mobile Native Input — positioned in-flow but visually invisible
-          so scrollIntoView works correctly. The opacity-0/h-0 approach keeps it
-          part of the layout flow while remaining invisible. */}
+      {/* Hidden Mobile Native Input */}
       {(step === 'name' || step === 'email' || step === 'message') && (
         <input 
           ref={inputRef}
           type={step === "email" ? "email" : "text"}
-          className="opacity-0 h-0 w-full overflow-hidden border-0 p-0 m-0 block"
+          className="opacity-0 h-0 w-full overflow-hidden border-0 p-0 m-0 block absolute"
           autoFocus
+          autoComplete={step === "email" ? "email" : step === "name" ? "name" : "off"}
           value={currentInput}
           onChange={(e) => setCurrentInput(e.target.value)}
           onKeyDown={handleKeyDown}
           onFocus={handleInputFocus}
+          style={{
+            // Prevent iOS zoom on input focus by setting font-size >= 16px (this is actually inherited)
+            // Use a more explicit approach
+            fontSize: '16px', // iOS zooms if font-size < 16px
+            left: '-9999px', // Off-screen positioning (better than opacity-0 for mobile UX)
+          }}
         />
       )}
     </div>

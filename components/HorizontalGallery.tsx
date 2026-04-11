@@ -1,25 +1,19 @@
 "use client";
 
-import { useRef, useState, useEffect } from "react";
+import { useRef } from "react";
 import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import ProjectCard from "./ProjectCard";
 import { SOYAL_DATA } from "@/config/personalConfig";
+import { useMediaQuery } from "@/lib/hooks/useMediaQuery";
 
 export default function HorizontalGallery() {
   const container = useRef<HTMLDivElement>(null);
   const track = useRef<HTMLDivElement>(null);
-  const [isMobile, setIsMobile] = useState(false);
+  const isMobile = useMediaQuery("(max-width: 768px)");
 
   const needsScroll = SOYAL_DATA.projects.length > 2;
-
-  useEffect(() => {
-    const check = () => setIsMobile(window.innerWidth < 768);
-    check();
-    window.addEventListener('resize', check);
-    return () => window.removeEventListener('resize', check);
-  }, []);
 
   useGSAP(() => {
     // On mobile, skip GSAP pinning entirely — use native touch scroll instead
@@ -28,53 +22,70 @@ export default function HorizontalGallery() {
     // Determine translation amount: Width of content track minus the viewport screen width
     const getScrollAmount = () => {
         const trackEl = track.current;
-        if (!trackEl) return 0;
-        return trackEl.scrollWidth - window.innerWidth;
+        if (!trackEl?.scrollWidth) return 0; // Safe fallback
+        return Math.max(0, trackEl.scrollWidth - window.innerWidth);
     };
 
+    const scrollAmount = getScrollAmount();
+    if (scrollAmount <= 0) return; // No need to animate if content fits
+
     const tween = gsap.to(track.current, {
-      x: () => -getScrollAmount(),
+      x: () => -scrollAmount,
       ease: "none",
     });
 
-    ScrollTrigger.create({
+    const trigger = ScrollTrigger.create({
       trigger: container.current,
       start: "top top",
-      // End controls how long we pin before releasing. 
-      end: () => `+=${getScrollAmount()}`, 
+      end: () => `+=${scrollAmount}`, 
       pin: true,
       animation: tween,
-      scrub: 1, // Smooth dampening on scrub
-      invalidateOnRefresh: true, // Recalculate on screen resize natively
+      scrub: 1.2, // Slightly lower value for snappier response
+      invalidateOnRefresh: true,
+      onUpdate: (self) => {
+        // Refresh if the amount changes (window resize)
+        const newAmount = getScrollAmount();
+        if (Math.abs(newAmount - scrollAmount) > 50) {
+          trigger.refresh();
+        }
+      }
     });
+
+    return () => {
+      trigger.kill();
+    };
   }, { scope: container, dependencies: [needsScroll, isMobile] });
 
   // Mobile layout: native horizontal scroll with snap
   if (isMobile) {
     return (
-      <div ref={container} className="w-full bg-surface border-y border-white/5 relative py-16">
+      <div ref={container} className="w-full bg-surface border-y border-white/5 relative py-16 touch-pan-x">
         {/* Section header */}
         <div className="px-6 mb-8">
           <h2 className="text-display text-3xl text-white">Project <span className="text-datacyan">Matrix.</span></h2>
           <p className="text-data text-xs opacity-60 mt-2 tracking-widest">{"// SWIPE TO BROWSE [X-AXIS]"}</p>
         </div>
 
-        {/* Native horizontal scroll track */}
-        <div 
-          ref={track}
-          className="mobile-scroll-track flex flex-nowrap gap-6 px-6 pb-4"
-        >
-          {SOYAL_DATA.projects.map((proj) => (
-            <div key={proj.id} className="mobile-scroll-card shrink-0">
-              <ProjectCard 
-                title={proj.title}
-                metrics={proj.metrics}
-                abstract={proj.abstract}
-                imageUrl={proj.imageUrl}
-              />
-            </div>
-          ))}
-        </div>
+      {/* Mobile layout: native horizontal scroll with snap */}
+      <div 
+        ref={track}
+        className="mobile-scroll-track flex flex-nowrap gap-6 px-6 pb-4"
+        style={{
+          WebkitOverflowScrolling: 'touch',
+          scrollSnapType: 'x mandatory',
+        }}
+      >
+        {SOYAL_DATA.projects.map((proj) => (
+          <div key={proj.id} className="mobile-scroll-card shrink-0">
+            <ProjectCard 
+              title={proj.title}
+              metrics={proj.metrics}
+              abstract={proj.abstract}
+              imageUrl={proj.imageUrl}
+            />
+          </div>
+        ))}
+      </div>
       </div>
     );
   }

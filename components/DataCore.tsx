@@ -1,8 +1,9 @@
 "use client";
 
-import { useMemo, useRef, useState, useEffect } from "react";
+import { useMemo, useRef } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
 import * as THREE from "three";
+import { useMediaQuery } from "@/lib/hooks/useMediaQuery";
 
 // Base particle counts — mobile gets 40% reduction for GPU perf
 const PARTICLE_COUNT_DESKTOP = 6000;
@@ -124,14 +125,8 @@ function ParticleSphere({ particleCount, radiusRange, pointSize }: {
 }
 
 export default function DataCore() {
-  const [isMobile, setIsMobile] = useState(false);
-
-  useEffect(() => {
-    const check = () => setIsMobile(window.innerWidth < 768);
-    check();
-    window.addEventListener('resize', check);
-    return () => window.removeEventListener('resize', check);
-  }, []);
+  // Use custom hook instead of duplicate resize listeners
+  const isMobile = useMediaQuery("(max-width: 768px)");
 
   const particleCount = isMobile ? PARTICLE_COUNT_MOBILE : PARTICLE_COUNT_DESKTOP;
   const radiusRange = isMobile ? RADIUS_MOBILE : RADIUS_DESKTOP;
