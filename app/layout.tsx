@@ -18,10 +18,14 @@ const jetbrainsMono = JetBrains_Mono({
   subsets: ["latin"],
 });
 
+const siteUrl =
+  process.env.NEXT_PUBLIC_SITE_URL ??
+  (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000");
+
 export const metadata: Metadata = {
   title: "Flow of Data - Portfolio",
   description: "High-end Data Analyst Portfolio",
-  metadataBase: new URL("https://yourportfolio.com"), // Replace with your actual domain
+  metadataBase: new URL(siteUrl),
 };
 
 export const viewport: Viewport = {

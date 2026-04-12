@@ -42,7 +42,7 @@ export default function HorizontalGallery() {
       animation: tween,
       scrub: 1.2, // Slightly lower value for snappier response
       invalidateOnRefresh: true,
-      onUpdate: (self) => {
+      onUpdate: () => {
         // Refresh if the amount changes (window resize)
         const newAmount = getScrollAmount();
         if (Math.abs(newAmount - scrollAmount) > 50) {
@@ -59,10 +59,14 @@ export default function HorizontalGallery() {
   // Mobile layout: native horizontal scroll with snap
   if (isMobile) {
     return (
-      <div ref={container} className="w-full bg-surface border-y border-white/5 relative py-16 touch-pan-x">
+      <div ref={container} className="w-full bg-surface border-y border-white/5 relative py-8 touch-pan-x">
         {/* Section header */}
-        <div className="px-6 mb-8">
-          <h2 className="text-display text-3xl text-white">Project <span className="text-datacyan">Matrix.</span></h2>
+        <div className="px-6 mb-4">
+          <h2 className="text-display text-white" style={{
+            fontSize: 'clamp(2rem, 5vw, 3.5rem)',
+            fontWeight: 800,
+            lineHeight: 1.2
+          }}>Project <span className="text-datacyan">Matrix.</span></h2>
           <p className="text-data text-xs opacity-60 mt-2 tracking-widest">{"// SWIPE TO BROWSE [X-AXIS]"}</p>
         </div>
 
@@ -106,7 +110,7 @@ export default function HorizontalGallery() {
       {/* The track containing the posters */}
       <div 
         ref={track} 
-        className={`flex flex-col md:flex-row items-center h-full pt-8 md:pt-12 group/track ${needsScroll ? 'w-max px-[20vw] flex-nowrap gap-24' : 'w-full justify-center flex-wrap md:flex-nowrap gap-8 md:gap-16'}`}
+        className={`flex flex-col md:flex-row items-center h-full pt-2 group/track ${needsScroll ? 'w-max px-[20vw] flex-nowrap gap-24' : 'w-full justify-center flex-wrap md:flex-nowrap gap-8 md:gap-16'}`}
       >
         {SOYAL_DATA.projects.map((proj) => (
           <ProjectCard 

@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useSyncExternalStore } from "react";
 
 /**
  * Custom hook to detect if a media query matches
@@ -9,41 +9,20 @@ import { useState, useEffect, useCallback } from "react";
  * @returns boolean indicating if the query matches (false on server, correct value on client)
  */
 export const useMediaQuery = (query: string): boolean => {
-  const [matches, setMatches] = useState(false);
-  const [hasChecked, setHasChecked] = useState(false);
+  const subscribe = (callback: () => void) => {
+    if (typeof window === "undefined") return () => {};
 
-  useEffect(() => {
-    // Only run on client
-    if (typeof window === "undefined") return;
+    const mediaQuery = window.matchMedia(query);
+    mediaQuery.addEventListener("change", callback);
 
-    const mq = window.matchMedia(query);
-    
-    // Set initial correct value
-    setMatches(mq.matches);
-    setHasChecked(true);
+    return () => mediaQuery.removeEventListener("change", callback);
+  };
 
-    // Create listener with proper debouncing
-    let timeoutId: NodeJS.Timeout;
-    const listener = (e: MediaQueryListEvent) => {
-      clearTimeout(timeoutId);
-      // Debounce rapid changes to prevent unnecessary re-renders
-      timeoutId = setTimeout(() => {
-        setMatches(e.matches);
-      }, 50);
-    };
+  const getSnapshot = () => {
+    if (typeof window === "undefined") return false;
+    return window.matchMedia(query).matches;
+  };
 
-    // Use addEventListener (modern approach)
-    mq.addEventListener("change", listener);
-
-    // Cleanup
-    return () => {
-      mq.removeEventListener("change", listener);
-      clearTimeout(timeoutId);
-    };
-  }, [query]);
-
-  // Return false on server to prevent hydration mismatch
-  // This is safe because components using this hook should handle both states
-  return hasChecked ? matches : false;
+  return useSyncExternalStore(subscribe, getSnapshot, () => false);
 };
 

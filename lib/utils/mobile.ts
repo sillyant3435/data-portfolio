@@ -33,19 +33,23 @@ export const supportsHighPerformanceGraphics = (): boolean => {
 /**
  * Debounce function for scroll/resize events
  */
-export const debounce = <T extends (...args: any[]) => any>(
+export const debounce = <T extends (...args: never[]) => unknown>(
   func: T,
   wait: number
 ): (...args: Parameters<T>) => void => {
-  let timeout: NodeJS.Timeout;
+  let timeout: ReturnType<typeof setTimeout> | undefined;
   
   return function executedFunction(...args: Parameters<T>) {
     const later = () => {
-      clearTimeout(timeout);
+      if (timeout) {
+        clearTimeout(timeout);
+      }
       func(...args);
     };
     
-    clearTimeout(timeout);
+    if (timeout) {
+      clearTimeout(timeout);
+    }
     timeout = setTimeout(later, wait);
   };
 };
@@ -53,11 +57,11 @@ export const debounce = <T extends (...args: any[]) => any>(
 /**
  * Throttle function to limit function calls
  */
-export const throttle = <T extends (...args: any[]) => any>(
+export const throttle = <T extends (...args: never[]) => unknown>(
   func: T,
   limit: number
 ): (...args: Parameters<T>) => void => {
-  let inThrottle: boolean;
+  let inThrottle = false;
   
   return function executedFunction(...args: Parameters<T>) {
     if (!inThrottle) {

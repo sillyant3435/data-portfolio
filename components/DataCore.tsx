@@ -20,7 +20,11 @@ function ParticleSphere({ particleCount, radiusRange, pointSize }: {
 }) {
   const pointsRef = useRef<THREE.Points>(null);
   const isVisibleRef = useRef(true);
-  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+
+  const pseudoRandom = (seed: number) => {
+    const value = Math.sin(seed) * 10000;
+    return value - Math.floor(value);
+  };
 
   // Track visibility using Intersection Observer to pause animation when off-screen
   useEffect(() => {
@@ -40,9 +44,9 @@ function ParticleSphere({ particleCount, radiusRange, pointSize }: {
     const pos = new Float32Array(particleCount * 3);
     for (let i = 0; i < particleCount; i++) {
         // Distribute points spherically
-        const r = radiusRange.min + Math.random() * (radiusRange.max - radiusRange.min);
-        const theta = 2 * Math.PI * Math.random();
-        const phi = Math.acos(2 * Math.random() - 1);
+        const r = radiusRange.min + pseudoRandom(i + 1) * (radiusRange.max - radiusRange.min);
+        const theta = 2 * Math.PI * pseudoRandom(i + 2);
+        const phi = Math.acos(2 * pseudoRandom(i + 3) - 1);
         
         const x = r * Math.sin(phi) * Math.cos(theta);
         const y = r * Math.sin(phi) * Math.sin(theta);

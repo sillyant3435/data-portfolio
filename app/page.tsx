@@ -32,7 +32,7 @@ export default function Home() {
     // 1. Truck'N Roll 'Poster Effect' Slide Layering (Desktop only)
     const sections = gsap.utils.toArray<HTMLElement>('.panel');
     
-    sections.forEach((panel, i) => {
+    sections.forEach((panel) => {
       // The horizontal gallery manages its own massive scroll width and pinning.
       // Therefore, it bypasses our global poster effect so it functions normally.
       if (panel.classList.contains('no-global-pin')) return;
@@ -55,8 +55,8 @@ export default function Home() {
     });
 
     // 2. High-speed fluid entrance motion blur (Desktop only)
-    sections.forEach((panel, i) => {
-      if (i === 0) return;
+    sections.forEach((panel, index) => {
+      if (index === 0) return;
       if (panel.classList.contains('no-global-pin')) return;
       
       const content = panel.querySelector('.panel-content-wrap');
@@ -90,18 +90,12 @@ export default function Home() {
           <DataCore />
         </div>
         <div className="panel-content-wrap z-10 text-center relative pointer-events-none w-full px-4">
-          <h1 className="text-display font-bold leading-none mb-6 group cursor-default pointer-events-auto mix-blend-screen drop-shadow-2xl" style={{
-            fontSize: 'clamp(3.5rem, 8vw, 7rem)',
-            fontWeight: 800,
-            letterSpacing: '-0.02em',
-            lineHeight: 1.1
-          }}>
-            <span className="text-white hover:text-datacyan hover:drop-shadow-[0_0_20px_rgba(0,245,255,0.3)] transition-all duration-500">{SOYAL_DATA.name.split(" ")[0]}</span>
-            <br />
-            <span className="text-graphite hover:text-white transition-colors duration-500">{SOYAL_DATA.name.split(" ")[1]}.</span>
-          </h1>
+          <h1 className="text-display font-bold leading-none mb-6 group cursor-default pointer-events-auto mix-blend-screen drop-shadow-2xl hero-heading">
+            <span className="text-white hover:text-datacyan hover:drop-shadow-[0_0_20px_rgba(0,245,255,0.3)] transition-all duration-500">{SOYAL_DATA.name.split(" ")[0]} </span>
+             <span className="text-graphite hover:text-white transition-colors duration-500">{SOYAL_DATA.name.split(" ")[1]}.</span>
+            </h1>
           <p className="text-data mt-8 text-lg md:text-xl tracking-widest uppercase opacity-80 hover:opacity-100 transition-opacity duration-300 pointer-events-auto">
-            // {SOYAL_DATA.role.toUpperCase()}
+            {SOYAL_DATA.role.toUpperCase().replace(' PORTFOLIO', '')}
           </p>
         </div>
       </section>
@@ -115,7 +109,6 @@ export default function Home() {
                 fontWeight: 800,
                 lineHeight: 1.2
               }}>Core <span className="text-datacyan">Engines.</span></h2>
-              <p className="text-data text-sm opacity-50 mt-4">{"// LIVE TELEMETRY STREAMS"}</p>
             </div>
             <SkillsDashboard />
          </div>

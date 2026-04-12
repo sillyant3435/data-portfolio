@@ -1,6 +1,8 @@
-import type { NextConfig } from "next";
-
-const nextConfig: NextConfig = {
+/** @type {import('next').NextConfig} */
+const nextConfig = {
+  turbopack: {
+    root: process.cwd(),
+  },
   images: {
     remotePatterns: [
       {
@@ -8,7 +10,6 @@ const nextConfig: NextConfig = {
         hostname: "images.unsplash.com",
       },
     ],
-
   },
   compress: true,
   poweredByHeader: false,

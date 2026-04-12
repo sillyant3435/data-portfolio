@@ -2,7 +2,11 @@
 
 import nodemailer from "nodemailer";
 import { checkRateLimit } from "@/lib/server/rateLimit";
-import { verifyCSRFToken } from "@/lib/server/csrf";
+import { generateCSRFToken, verifyCSRFToken } from "@/lib/server/csrf";
+
+export async function initializeContactForm() {
+  return generateCSRFToken();
+}
 
 /**
  * Basic input sanitization to prevent XSS

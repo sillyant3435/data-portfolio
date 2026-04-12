@@ -3,7 +3,7 @@
 import { ReactLenis } from "lenis/react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState } from "react";
 
 if (typeof window !== "undefined") {
   gsap.registerPlugin(ScrollTrigger);
@@ -29,7 +29,7 @@ export default function SmoothScroller({ children }: { children: React.ReactNode
     if (typeof window === "undefined") return;
 
     // Configure GSAP to update ScrollTrigger with Lenis ticker
-    function update(time: number) {
+    function update() {
       ScrollTrigger.update();
     }
     

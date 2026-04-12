@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { motion } from "framer-motion";
 import { SOYAL_DATA } from "@/config/personalConfig";
-import { submitContactForm } from "@/app/actions/contact";
+import { initializeContactForm, submitContactForm } from "@/app/actions/contact";
 
 type Step = 'name' | 'email' | 'message' | 'uploading' | 'success' | 'error';
 
@@ -14,6 +14,8 @@ function isValidEmail(email: string): boolean {
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   return emailRegex.test(email);
 }
+
+const Prefix = () => <span className="text-graphite mr-3 inline-block select-none">root@data-core:~#</span>;
 
 export default function TerminalContactForm() {
   const [step, setStep] = useState<Step>('name');
@@ -29,23 +31,34 @@ export default function TerminalContactForm() {
 
   // Initialize CSRF token on mount
   useEffect(() => {
-    // In a real app, fetch CSRF token from server
-    // For now, generate a simple one client-side
-    setCSRFToken(Math.random().toString(36).substring(2));
+    let isMounted = true;
+
+    const loadToken = async () => {
+      const token = await initializeContactForm();
+      if (isMounted) {
+        setCSRFToken(token);
+      }
+    };
+
+    void loadToken();
+
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
-  const handleTerminalClick = () => {
+  const handleTerminalClick = useCallback(() => {
     if (step !== 'uploading' && step !== 'success' && step !== 'error') {
       inputRef.current?.focus();
     }
-  };
+  }, [step]);
 
   useEffect(() => {
     // Only focus on step changes AFTER initial mount, not on initial 'name' step
     if (step !== 'name') {
       handleTerminalClick();
     }
-  }, [step]);
+  }, [step, handleTerminalClick]);
 
   const handleInputFocus = useCallback(() => {
     // On mobile, don't scroll immediately - let keyboard animation finish
@@ -56,8 +69,7 @@ export default function TerminalContactForm() {
       const isMobile = window.innerWidth < 768;
       if (!isMobile) return; // Only scroll on mobile
       
-      const formElement = formContainerRef.current;
-      if (!formElement) return;
+      if (!formContainerRef.current) return;
 
       // Use a small delay for iOS keyboard animation
       const delay = /iPhone|iPad|iPod/.test(navigator.userAgent) ? 300 : 100;
@@ -163,8 +175,6 @@ export default function TerminalContactForm() {
     setProgress(0);
   };
 
-  const Prefix = () => <span className="text-graphite mr-3 inline-block select-none">root@data-core:~#</span>;
-
   return (
     <div 
       ref={formContainerRef}
@@ -196,19 +206,19 @@ export default function TerminalContactForm() {
         {/* Execution Log */}
         {(step !== 'name') && (
           <div className="text-white">
-            <Prefix /> <span className="text-datacyan">INSERT INTO</span> contacts (name) <span className="text-datacyan">VALUES</span> ('{name}');
+            <Prefix /> <span className="text-datacyan">INSERT INTO</span> contacts (name) <span className="text-datacyan">VALUES</span> (&apos;{name}&apos;);
             <br/><span className="text-graphite text-xs ml-[140px]">Query OK, 1 row affected.</span>
           </div>
         )}
         {(step === 'message' || step === 'uploading' || step === 'success' || step === 'error') && (
           <div className="text-white">
-            <Prefix /> <span className="text-datacyan">UPDATE</span> contacts <span className="text-datacyan">SET</span> email='{email}';
+            <Prefix /> <span className="text-datacyan">UPDATE</span> contacts <span className="text-datacyan">SET</span> email=&apos;{email}&apos;;
             <br/><span className="text-graphite text-xs ml-[140px]">Query OK, 1 row affected.</span>
           </div>
         )}
         {(step === 'uploading' || step === 'success' || step === 'error') && (
           <div className="text-white">
-            <Prefix /> <span className="text-datacyan">UPDATE</span> contacts <span className="text-datacyan">SET</span> message='{message}';
+            <Prefix /> <span className="text-datacyan">UPDATE</span> contacts <span className="text-datacyan">SET</span> message=&apos;{message}&apos;;
             <br/><span className="text-graphite text-xs ml-[140px]">Query OK, 1 row affected.</span>
           </div>
         )}
@@ -294,6 +304,7 @@ export default function TerminalContactForm() {
           value={currentInput}
           onChange={(e) => setCurrentInput(e.target.value)}
           onKeyDown={handleKeyDown}
+          onFocus={handleInputFocus}
           style={{
             fontSize: '16px',
             left: '-9999px',
